@@ -1,0 +1,32 @@
+(* Codice P-Like sintatticamente valido MA non pignolo sullo stile canonico Laccetti:
+   - usa TRUE / FALSE invece di .TRUE. / .FALSE.
+   - usa AND invece di .AND.
+   - usa A[i] invece di A(i)
+   - assegna 0 invece di 0. a un real
+   - chiude con 'end' senza nome del programma
+
+   Confronta:
+     plike run examples/stile_non_canonico.plike --napoli win   (30 e Lode / Promosso!)
+     plike run examples/stile_non_canonico.plike --napoli draw  (Promosso con warning!)
+     plike run examples/stile_non_canonico.plike --napoli loss  (BOCCIATO! Pignolerie promosse a errori!)
+*)
+begin stile_non_canonico
+    var: A[3]: array of real
+    var: somma: real
+    var: i: integer
+    var: ok: logical
+
+    A[1] := 1.5
+    A[2] := 2.5
+    A[3] := 3.0
+    somma := 0
+    ok := TRUE
+
+    for i := 1 to 3 do
+        if (ok = TRUE AND A[i] > 0.) then
+            somma := somma + A[i]
+        endif
+    endfor
+
+    print 'Somma:', somma
+end

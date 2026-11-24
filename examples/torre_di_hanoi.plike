@@ -1,0 +1,19 @@
+(* La Torre di Hanoi ricorsiva - Slide Ricorsione Prof. Giuliano Laccetti *)
+
+procedure tower_of_hanoi(in: n, origine, arrivo, temp)
+    var: n: integer
+    var: origine, arrivo, temp: character
+begin
+    if (n = 1) then
+        print 'Sposta disco 1 da', origine, 'a', arrivo
+    else
+        tower_of_hanoi(n - 1, origine, temp, arrivo)
+        print 'Sposta disco', n, 'da', origine, 'a', arrivo
+        tower_of_hanoi(n - 1, temp, arrivo, origine)
+    endif
+end tower_of_hanoi
+
+begin test_hanoi
+    print 'Mosse per Torre di Hanoi con 3 dischi:'
+    tower_of_hanoi(3, 'A', 'C', 'B')
+end test_hanoi

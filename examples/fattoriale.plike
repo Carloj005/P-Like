@@ -1,0 +1,43 @@
+(* Fattoriale iterativo, Fattoriale ricorsivo e MCD di Euclide - Slide Ricorsione *)
+
+function fatt_iter(in: n): integer
+    var: n, i: integer
+begin
+    fatt_iter := 1
+    for i := 2 to n do
+        fatt_iter := fatt_iter * i
+    endfor
+end fatt_iter
+
+function fatt_ricorsivo(in: n): integer
+    var: n: integer
+begin
+    if (n <= 1) then
+        /* soluzione problema banale */
+        fatt_ricorsivo := 1
+    else
+        /* autoattivazione */
+        fatt_ricorsivo := fatt_ricorsivo(n - 1) * n
+    endif
+end fatt_ricorsivo
+
+function gcd(in: m, n): integer
+    var: m, n: integer
+begin
+    if (m mod n = 0) then
+        gcd := n
+    else
+        gcd := gcd(n, m mod n)
+    endif
+end gcd
+
+begin test_ricorsione
+    var: n, r1, r2, g: integer
+    n := 6
+    r1 := fatt_iter(n)
+    r2 := fatt_ricorsivo(n)
+    g := gcd(66, 48)
+    print 'Fattoriale iterativo di', n, '=', r1
+    print 'Fattoriale ricorsivo di', n, '=', r2
+    print 'MCD(66, 48) =', g
+end test_ricorsione

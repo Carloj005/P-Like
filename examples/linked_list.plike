@@ -1,0 +1,55 @@
+(* Linked List ordinata ricorsiva - Slide 20 Strutture Dati Dinamiche Parte 2! *)
+
+type list_pointer: *nodo_lista
+     nodo_lista: record
+         info: integer
+         link: list_pointer
+     end
+
+procedure recursive_ordered_insert(in/out: head; in: new_nodo)
+    var: head, new_nodo: list_pointer
+begin
+    if (head = NULL) then
+        new_nodo.link := head
+        head := new_nodo
+    else
+        if (new_nodo.info < head.info) then
+            new_nodo.link := head
+            head := new_nodo
+        else
+            recursive_ordered_insert(head.link, new_nodo)
+        endif
+    endif
+end recursive_ordered_insert
+
+function somma_lista(in: head): integer
+    var: head: list_pointer
+begin
+    if (head = NULL) then
+        somma_lista := 0
+    else
+        somma_lista := head.info + somma_lista(head.link)
+    endif
+end somma_lista
+
+begin test_linked_list
+    var: head, n1, n2, n3, n4: list_pointer
+    var: tot: integer
+
+    head := NULL
+
+    n1 := allocate nodo_lista; n1.info := 30; n1.link := NULL
+    n2 := allocate nodo_lista; n2.info := 10; n2.link := NULL
+    n3 := allocate nodo_lista; n3.info := 25; n3.link := NULL
+    n4 := allocate nodo_lista; n4.info := 5;  n4.link := NULL
+
+    recursive_ordered_insert(head, n1)
+    recursive_ordered_insert(head, n2)
+    recursive_ordered_insert(head, n3)
+    recursive_ordered_insert(head, n4)
+
+    print 'Lista ordinata costruita ricorsivamente:'
+    list_visualize(head)
+    tot := somma_lista(head)
+    print 'Somma dei campi info:', tot
+end test_linked_list

@@ -1,0 +1,70 @@
+(* Ricerca binaria iterativa e ricorsiva - Slide Ricerca Binaria & Ricorsione *)
+
+procedure ricerca_binaria(in: A, n, elemento; out: trovato, posizione_elemento)
+    var: primo, ultimo, medio, n, elemento, posizione_elemento: integer
+    var: trovato: logical
+    var: A: array [1..100] of integer
+begin
+    primo := 1
+    ultimo := n
+    trovato := .FALSE.
+    posizione_elemento := -1
+
+    while ((primo <= ultimo) .AND. .NOT. trovato) do
+        medio := (primo + ultimo) / 2
+        if (elemento = A(medio)) then
+            trovato := .TRUE.
+            posizione_elemento := medio
+        else if (elemento < A(medio)) then
+            ultimo := medio - 1
+        else
+            primo := medio + 1
+        endif
+        endif
+    endwhile
+end ricerca_binaria
+
+function trova_pos_ricorsiva(in: elenco, primo, ultimo, chiave): integer
+    var: elenco: array [1..100] of integer
+    var: mediano, primo, ultimo, chiave: integer
+begin
+    if (primo > ultimo) then
+        trova_pos_ricorsiva := 0
+    else
+        mediano := (primo + ultimo) / 2
+        if (chiave = elenco(mediano)) then
+            trova_pos_ricorsiva := mediano
+        else if (chiave < elenco(mediano)) then
+            trova_pos_ricorsiva := trova_pos_ricorsiva(elenco, primo, mediano - 1, chiave)
+        else
+            trova_pos_ricorsiva := trova_pos_ricorsiva(elenco, mediano + 1, ultimo, chiave)
+        endif
+        endif
+    endif
+end trova_pos_ricorsiva
+
+begin test_ricerca_binaria
+    var: A: array [1..10] of integer
+    var: pos, pos_ric: integer
+    var: trovato: logical
+
+    A(1) := 1
+    A(2) := 3
+    A(3) := 5
+    A(4) := 10
+    A(5) := 15
+    A(6) := 23
+    A(7) := 31
+    A(8) := 47
+    A(9) := 56
+    A(10) := 64
+
+    ricerca_binaria(A, 10, 23, trovato, pos)
+    print 'Ricerca iterativa (23): trovato =', trovato, 'posizione =', pos
+
+    pos_ric := trova_pos_ricorsiva(A, 1, 10, 47)
+    print 'Ricerca ricorsiva (47): posizione =', pos_ric
+
+    ricerca_binaria(A, 10, 8, trovato, pos)
+    print 'Ricerca iterativa (8):  trovato =', trovato, 'posizione =', pos
+end test_ricerca_binaria

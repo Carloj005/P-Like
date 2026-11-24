@@ -1,0 +1,17 @@
+(* Stack (Pila LIFO) con ADT P-Like - Slide Strutture Dati Dinamiche Parte 1 *)
+
+begin test_stack
+    var: head: stack_pointer
+    var: elem: integer
+
+    stack_create(head)
+    push(head, 10)
+    push(head, 20)
+    push(head, 30)
+
+    print 'Estrazione LIFO dallo stack:'
+    while (.NOT. is_stack_empty(head)) do
+        pop(head, elem)
+        print 'Popped:', elem
+    endwhile
+end test_stack

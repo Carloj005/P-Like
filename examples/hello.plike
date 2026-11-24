@@ -1,0 +1,5 @@
+(* Hello World canonico in P-Like *)
+begin hello_napoli
+    print 'Ciao dal compilatore P-Like del Prof. Giuliano Laccetti!'
+    print 'Universita degli Studi di Napoli Federico II - Forza Napoli!'
+end hello_napoli

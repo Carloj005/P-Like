@@ -1,0 +1,22 @@
+(* Esempio di compito scritto da studente con tipiche sviste da esame!
+   Prova a eseguirlo con:
+     plike run examples/esame_studente.plike --napoli win   (PASSA e auto-ripara!)
+     plike run examples/esame_studente.plike --napoli draw  (BOCCIATO!)
+     plike run examples/esame_studente.plike --napoli loss  (BOCCIATO!)
+*)
+begin esame_studente
+    var: somma: integer
+    var: trovato: logical
+
+    somma = 0
+    trovato := FALSE
+
+    for i := 1 to 5 do
+        somma := somma + i
+    endfor
+
+    if (somma = 15 AND trovato = FALSE)
+        trovato := TRUE
+        print 'Somma calcolata:', somma, 'Esito:', trovato
+    endif
+end

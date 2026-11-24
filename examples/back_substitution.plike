@@ -1,0 +1,38 @@
+(* Algoritmo di Back Substitution Ux = b - Slide Calcolo Matriciale Parte 2 *)
+
+procedure back_substitution(in: n, U, b; out: x)
+    var: n, i, j: integer
+    var: U: array [1..10, 1..10] of real
+    var: b, x: array [1..10] of real
+begin
+    x(n) := b(n) / U(n, n)
+    for i := n - 1 to 1 step -1 do
+        x(i) := b(i)
+        for j := i + 1 to n do
+            x(i) := x(i) - U(i, j) * x(j)
+        endfor
+        x(i) := x(i) / U(i, i)
+    endfor
+end back_substitution
+
+begin test_back_sub
+    var: U: array [1..3, 1..3] of real
+    var: b, x: array [1..3] of real
+    var: i: integer
+
+    (* Sistema triangolare superiore dalla slide 16:
+       2*x1 + 2*x2 + 4*x3 = 5
+              7*x2 + 11*x3 = 8
+                     2*x3 = 2  -> x3=1, x2=-3/7, x1=13/14 *)
+    U(1, 1) := 2.; U(1, 2) := 2.; U(1, 3) := 4.
+    U(2, 1) := 0.; U(2, 2) := 7.; U(2, 3) := 11.
+    U(3, 1) := 0.; U(3, 2) := 0.; U(3, 3) := 2.
+
+    b(1) := 5.; b(2) := 8.; b(3) := 2.
+
+    back_substitution(3, U, b, x)
+    print 'Soluzione Ux = b:'
+    for i := 1 to 3 do
+        print 'x(', i, ') =', x(i)
+    endfor
+end test_back_sub

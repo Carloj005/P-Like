@@ -1,0 +1,41 @@
+(* Ordinamento Exchange Sort (ottimizzato con flag ordinato) - Slide Prof. Laccetti *)
+
+procedure exchange_sort(in: n; in/out: A)
+    var: i, j, n: integer
+    var: A: array [1..100] of real
+    var: ordinato: logical
+    var: tmp: real
+begin
+    ordinato := .FALSE.
+    i := 1
+    while ((i < n) .AND. (.NOT. ordinato)) do
+        ordinato := .TRUE.
+        for j := 1 to n - i do
+            if (A(j) > A(j + 1)) then
+                tmp := A(j)
+                A(j) := A(j + 1)
+                A(j + 1) := tmp
+                ordinato := .FALSE.
+            endif
+        endfor
+        i := i + 1
+    endwhile
+end exchange_sort
+
+begin test_exchange_sort
+    var: A: array [1..6] of real
+    var: i: integer
+
+    A(1) := 2.
+    A(2) := 4.
+    A(3) := 5.
+    A(4) := 3.
+    A(5) := 11.
+    A(6) := 1.
+
+    exchange_sort(6, A)
+    print 'Array ordinato (Exchange Sort):'
+    for i := 1 to 6 do
+        print A(i)
+    endfor
+end test_exchange_sort

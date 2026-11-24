@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "p-like"
+version = "1.0.0"
+description = "Compilatore, Virtual Machine e transpiler C99/Python per il linguaggio didattico P-Like (Prof. Giuliano Laccetti - UNINA Federico II), con Variabile Partite del Napoli."
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.9"
+authors = [
+    {name = "Carloj005"}
+]
+keywords = ["p-like", "pascal-like", "compiler", "giuliano-laccetti", "federico-ii", "napoli", "bytecode", "vm"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Education",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Compilers",
+]
+
+[project.scripts]
+plike = "plike.cli:main"
+
+[project.entry-points."pygments.lexers"]
+plike = "plike.pygments_lexer:PLikeLexer"
+
+[tool.setuptools.packages.find]
+include = ["plike*"]

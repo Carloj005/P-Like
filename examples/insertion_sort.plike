@@ -1,0 +1,37 @@
+(* Ordinamento Insertion Sort - Slide Prof. Giuliano Laccetti *)
+
+procedure insertion_sort(in: n; in/out: a)
+    var: i, j, n: integer
+    var: x: real
+    var: a: array [1..100] of real
+begin
+    for i := 2 to n do
+        x := a(i)
+        j := i
+        while (j >= 2 .AND. x < a(j - 1)) do
+            a(j) := a(j - 1)
+            j := j - 1
+        endwhile
+        a(j) := x
+    endfor
+end insertion_sort
+
+begin test_insertion_sort
+    var: A: array [1..7] of real
+    var: i: integer
+
+    A(1) := 21.
+    A(2) := 4.
+    A(3) := 5.
+    A(4) := 3.
+    A(5) := 11.
+    A(6) := 1.
+    A(7) := 17.
+
+    insertion_sort(7, A)
+
+    print 'Array ordinato (Insertion Sort):'
+    for i := 1 to 7 do
+        print A(i)
+    endfor
+end test_insertion_sort

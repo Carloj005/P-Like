@@ -1,0 +1,40 @@
+(* Prodotto matrice-matrice C = A * B - Slide Calcolo Matriciale Parte 1 *)
+
+procedure prod_mat_mat(in: m, n, p, A, B; out: C)
+    var: m, n, p, i, j, k: integer
+    var: A: array [1..10, 1..10] of real
+    var: B: array [1..10, 1..10] of real
+    var: C: array [1..10, 1..10] of real
+begin
+    for i := 1 to m do
+        for j := 1 to p do
+            C(i, j) := 0.
+            for k := 1 to n do
+                C(i, j) := C(i, j) + A(i, k) * B(k, j)
+            endfor
+        endfor
+    endfor
+end prod_mat_mat
+
+begin test_matrici
+    var: A: array [1..2, 1..3] of real
+    var: B: array [1..3, 1..2] of real
+    var: C: array [1..2, 1..2] of real
+    var: i, j: integer
+
+    A(1, 1) := 1.; A(1, 2) := 2.; A(1, 3) := 3.
+    A(2, 1) := 4.; A(2, 2) := 5.; A(2, 3) := 6.
+
+    B(1, 1) := 7.; B(1, 2) := 8.
+    B(2, 1) := 9.; B(2, 2) := 10.
+    B(3, 1) := 11.; B(3, 2) := 12.
+
+    prod_mat_mat(2, 3, 2, A, B, C)
+
+    print 'Prodotto C = A * B:'
+    for i := 1 to 2 do
+        for j := 1 to 2 do
+            print 'C(', i, ',', j, ') =', C(i, j)
+        endfor
+    endfor
+end test_matrici

@@ -1,0 +1,35 @@
+(* ADT complex con tipo derivato record - Slide Strutture Dati Record *)
+
+type complex: record
+    Re: real
+    Im: real
+end
+
+procedure somma_complex(in: x, y; out: z)
+    var: x, y, z: complex
+begin
+    z.Re := x.Re + y.Re
+    z.Im := x.Im + y.Im
+end somma_complex
+
+procedure prod_complex(in: x, y; out: z)
+    var: x, y, z: complex
+begin
+    z.Re := x.Re * y.Re - x.Im * y.Im
+    z.Im := x.Re * y.Im + x.Im * y.Re
+end prod_complex
+
+begin test_complex
+    var: a, b, s, p: complex
+
+    a.Re := 3.0
+    a.Im := 2.0
+    b.Re := 1.5
+    b.Im := -4.0
+
+    somma_complex(a, b, s)
+    prod_complex(a, b, p)
+
+    print 'Somma   =', s.Re, '+ i *', s.Im
+    print 'Prodotto =', p.Re, '+ i *', p.Im
+end test_complex
