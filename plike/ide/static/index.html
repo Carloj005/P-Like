@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>P-Like Studio — IDE Prof. Giuliano Laccetti</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body class="mood-standard">
+  <!-- TOP HEADER BAR -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-crest" title="SSC Napoli x UNINA Federico II">P</div>
+      <div class="brand-text">
+        <span class="brand-title">P-Like Studio</span>
+        <span class="brand-sub">Prof. Giuliano Laccetti &middot; UNINA Federico II</span>
+      </div>
+    </div>
+
+    <div class="file-pill">
+      <span class="file-dot" id="dirtyDot" title="Modifiche non salvate"></span>
+      <input id="filenameInput" type="text" value="esame_studente.plike" aria-label="Nome file corrente" />
+    </div>
+
+    <div class="topbar-actions">
+      <button id="btnRun" class="btn btn-primary" title="Compila ed esegui (Ctrl+Enter)">
+        <span class="icon">&#9654;</span> Esegui
+      </button>
+      <button id="btnCheck" class="btn btn-secondary" title="Verifica solo compilazione e voto (Ctrl+Shift+B)">
+        <span class="icon">&#10003;</span> Verifica
+      </button>
+      <button id="btnCheatsheet" class="btn btn-ghost" title="Guida rapida alla sintassi P-Like">
+        ? Sintassi
+      </button>
+    </div>
+  </header>
+
+  <!-- SSC NAPOLI LIVE SCOREBOARD & MOOD BAR -->
+  <section class="napoli-bar" id="napoliBar">
+    <div class="napoli-match-info">
+      <span class="napoli-badge" id="napoliOutcomeBadge">NAPOLI</span>
+      <div class="napoli-score-block">
+        <div class="napoli-scoreboard" id="napoliScoreboard">Caricamento ultima partita SSC Napoli...</div>
+        <div class="napoli-meta" id="napoliMeta">Interrogazione live in corso</div>
+      </div>
+    </div>
+
+    <div class="napoli-mood-meter">
+      <div class="mood-label-row">
+        <span class="mood-title">Umore Prof. Laccetti</span>
+        <span class="mood-pill" id="moodPill">STANDARD</span>
+      </div>
+      <div class="mood-track" id="moodTrack">
+        <div class="mood-seg" data-level="1"></div>
+        <div class="mood-seg" data-level="2"></div>
+        <div class="mood-seg" data-level="3"></div>
+        <div class="mood-seg" data-level="4"></div>
+        <div class="mood-seg" data-level="5"></div>
+      </div>
+    </div>
+
+    <div class="napoli-controls">
+      <label class="ctrl-group">
+        <span>Modalita Napoli</span>
+        <select id="napoliModeSelect">
+          <option value="auto">Live SSC Napoli (Auto)</option>
+          <option value="big-win">Goleada (Napoli 5-1 Juve)</option>
+          <option value="win">Vittoria (Napoli 2-0 Torino)</option>
+          <option value="draw">Pareggio (Napoli 1-1 Lazio)</option>
+          <option value="loss">Sconfitta (Napoli 0-1 Bologna)</option>
+          <option value="derby-loss">Disastro (Juve 3-0 Napoli)</option>
+          <option value="off">Disattivata (Standard)</option>
+        </select>
+      </label>
+
+      <label class="ctrl-check" title="Disattiva il rischio casuale di bocciatura per malumore su codice perfetto dopo una sconfitta">
+        <input type="checkbox" id="noLuckCheck" />
+        <span>No-Luck</span>
+      </label>
+
+      <label class="ctrl-seed" title="Seed opzionale per rendere deterministico il tiro malumore">
+        <span>Seed</span>
+        <input type="number" id="seedInput" placeholder="auto" />
+      </label>
+
+      <button id="btnRefreshNapoli" class="btn btn-icon" title="Aggiorna live partita SSC Napoli">
+        &#8635;
+      </button>
+    </div>
+  </section>
+
+  <!-- MAIN WORKBENCH -->
+  <main class="workbench">
+    <!-- LEFT SIDEBAR: FILE & EXAMPLES EXPLORER -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <span>ESPLORA P-LIKE</span>
+        <div class="sidebar-tools">
+          <button id="btnNewFile" class="mini-btn" title="Nuovo file .plike">+ Nuovo</button>
+          <button id="btnOpenFile" class="mini-btn" title="Apri file .plike dal PC">Apri</button>
+          <button id="btnSaveFile" class="mini-btn" title="Salva file .plike (Ctrl+S)">Salva</button>
+          <input type="file" id="hiddenFileInput" accept=".plike,.txt" hidden />
+        </div>
+      </div>
+      <div class="examples-list" id="examplesList">
+        <div class="loading-msg">Caricamento esempi...</div>
+      </div>
+    </aside>
+
+    <div class="splitter splitter-v" id="splitSidebar"></div>
+
+    <!-- CENTER PANE: CODE EDITOR + STDIN DOCK -->
+    <section class="editor-pane" id="editorPane">
+      <div class="pane-header">
+        <div class="pane-title">
+          <span class="dot-accent"></span>
+          <span>Editor P-Like</span>
+        </div>
+        <div class="editor-meta">
+          <span id="cursorPos">Ln 1, Col 1</span>
+          <span class="sep">|</span>
+          <span>UTF-8 &middot; 1-based arrays</span>
+        </div>
+      </div>
+
+      <div class="editor-shell">
+        <div class="gutter" id="lineGutter" aria-hidden="true"></div>
+        <div class="code-stage">
+          <pre class="code-highlight" id="codeHighlight" aria-hidden="true"><code id="codeHighlightInner"></code></pre>
+          <textarea
+            id="codeEditor"
+            class="code-input"
+            spellcheck="false"
+            autocapitalize="off"
+            autocomplete="off"
+            autocorrect="off"
+            placeholder="Scrivi qui il tuo algoritmo in P-Like..."
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- STDIN DOCK FOR `read` -->
+      <div class="stdin-dock">
+        <div class="stdin-header">
+          <span>INPUT (<code>read</code> / stdin)</span>
+          <span class="stdin-hint">Inserisci i valori separati da spazi o a capo prima di premere Esegui</span>
+        </div>
+        <textarea
+          id="stdinInput"
+          class="stdin-textarea"
+          rows="3"
+          placeholder="Es. 5&#10;9 2 7 1 5"
+          spellcheck="false"
+        ></textarea>
+      </div>
+    </section>
+
+    <div class="splitter splitter-v" id="splitInspector"></div>
+
+    <!-- RIGHT PANE: VERDICT CARD + MULTI-TAB OUTPUT INSPECTOR -->
+    <section class="inspector-pane" id="inspectorPane">
+      <!-- LACCETTI VERDICT CARD -->
+      <div class="verdict-card idle" id="verdictCard">
+        <div class="verdict-top">
+          <div>
+            <div class="verdict-eyebrow">ESITO COMPILAZIONE &amp; ESAME</div>
+            <div class="verdict-status" id="verdictStatus">Pronto a compilare</div>
+          </div>
+          <div class="grade-stamp" id="gradeStamp">--/30</div>
+        </div>
+        <p class="verdict-quote" id="verdictQuote">
+          Premi <strong>Esegui</strong> (o <code>Ctrl+Enter</code>) per far correggere il tuo algoritmo P-Like al Prof. Laccetti!
+        </p>
+        <div class="verdict-stats" id="verdictStats"></div>
+      </div>
+
+      <!-- INSPECTOR TABS -->
+      <div class="tabs-bar" role="tablist">
+        <button class="tab-btn active" data-tab="console">Console</button>
+        <button class="tab-btn" data-tab="diagnostics">
+          Diagnostiche <span class="tab-count" id="diagCountBadge">0</span>
+        </button>
+        <button class="tab-btn" data-tab="bytecode">Bytecode</button>
+        <button class="tab-btn" data-tab="c99">C99</button>
+        <button class="tab-btn" data-tab="python">Python</button>
+        <button class="tab-btn" data-tab="ast">AST</button>
+      </div>
+
+      <div class="tab-panels">
+        <!-- CONSOLE TAB -->
+        <div class="tab-panel active" id="panel-console">
+          <div class="panel-toolbar">
+            <span id="execMeta">Nessuna esecuzione ancora</span>
+            <button class="mini-btn" id="btnCopyConsole">Copia</button>
+          </div>
+          <pre class="console-output" id="consoleOutput">In attesa di esecuzione...</pre>
+        </div>
+
+        <!-- DIAGNOSTICS TAB -->
+        <div class="tab-panel" id="panel-diagnostics">
+          <div class="diag-list" id="diagList">
+            <div class="empty-state">Nessuna diagnostica: codice pulito!</div>
+          </div>
+        </div>
+
+        <!-- BYTECODE TAB -->
+        <div class="tab-panel" id="panel-bytecode">
+          <div class="panel-toolbar">
+            <span>Bytecode P-Like Disassembly (<code>.plbc</code>)</span>
+            <div class="toolbar-btns">
+              <button class="mini-btn" data-copy="bytecodeOutput">Copia</button>
+              <button class="mini-btn" id="btnDownloadBc">Scarica .plbc</button>
+            </div>
+          </div>
+          <pre class="code-viewer" id="bytecodeOutput">// Compila un programma per vedere il bytecode P-Like</pre>
+        </div>
+
+        <!-- C99 TAB -->
+        <div class="tab-panel" id="panel-c99">
+          <div class="panel-toolbar">
+            <span>Codice C99 generato dal Transpiler</span>
+            <div class="toolbar-btns">
+              <button class="mini-btn" data-copy="c99Output">Copia</button>
+              <button class="mini-btn" id="btnDownloadC">Scarica .c</button>
+            </div>
+          </div>
+          <pre class="code-viewer" id="c99Output">/* Compila un programma per generare il codice C99 */</pre>
+        </div>
+
+        <!-- PYTHON TAB -->
+        <div class="tab-panel" id="panel-python">
+          <div class="panel-toolbar">
+            <span>Codice Python 3 generato dal Transpiler</span>
+            <div class="toolbar-btns">
+              <button class="mini-btn" data-copy="pythonOutput">Copia</button>
+              <button class="mini-btn" id="btnDownloadPy">Scarica .py</button>
+            </div>
+          </div>
+          <pre class="code-viewer" id="pythonOutput"># Compila un programma per generare il codice Python 3</pre>
+        </div>
+
+        <!-- AST TAB -->
+        <div class="tab-panel" id="panel-ast">
+          <div class="panel-toolbar">
+            <span>Abstract Syntax Tree (JSON)</span>
+            <button class="mini-btn" data-copy="astOutput">Copia JSON</button>
+          </div>
+          <pre class="code-viewer" id="astOutput">{}</pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- STATUS BAR -->
+  <footer class="statusbar">
+    <span id="statusMessage">P-Like Studio pronto</span>
+    <span class="shortcuts-hint">Ctrl+Enter: Esegui &middot; Ctrl+Shift+B: Verifica &middot; Ctrl+S: Salva &middot; Tab: Indenta</span>
+  </footer>
+
+  <!-- SYNTAX CHEATSHEET MODAL -->
+  <div class="modal-backdrop hidden" id="cheatsheetModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h2>Guida Rapida alla Sintassi P-Like Canonica (Prof. Laccetti)</h2>
+        <button class="btn btn-icon" id="btnCloseModal">&times;</button>
+      </div>
+      <div class="modal-body cheatsheet-grid">
+        <div class="cheat-box">
+          <h3>Struttura &amp; Tipi</h3>
+          <pre>begin nome_prog
+    var: i, n: integer
+    var: media: real
+    var: ok: logical
+    var: nome: character
+    var: A: array [1..n] of real
+    ...
+end nome_prog</pre>
+        </div>
+        <div class="cheat-box">
+          <h3>Operatori Canonici</h3>
+          <pre>x := a + b        (* Assegnazione *)
+5.  0.  4.e-3     (* Reali con punto! *)
+.TRUE.  .FALSE.   (* Costanti logiche *)
+.AND. .OR. .NOT.  (* Operatori logici *)
+=  !=  &lt;  &lt;=  &gt;  &gt;=
+a / b             (* Div. intera se int *)
+a mod b           (* Resto intero *)</pre>
+        </div>
+        <div class="cheat-box">
+          <h3>Controllo di Flusso</h3>
+          <pre>if (x &gt; 0) then
+    print 'Positivo'
+else
+    print 'Non positivo'
+endif
+
+for i := 1 to n do ... endfor
+for i := n to 1 step -1 do ... endfor
+while (i &lt;= n) do ... endwhile
+repeat ... until (trovato)</pre>
+        </div>
+        <div class="cheat-box">
+          <h3>Procedure, Function &amp; Record</h3>
+          <pre>procedure scambia(in/out: a, b)
+    var: a, b, t: integer
+begin
+    t := a; a := b; b := t
+end scambia
+
+function doppio(in: x): integer
+    var: x: integer
+begin
+    doppio := x * 2
+end doppio
+
+type complex: record
+    Re: real
+    Im: real
+end</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

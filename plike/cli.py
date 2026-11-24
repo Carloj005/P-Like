@@ -12,6 +12,7 @@ from . import __version__
 from .ast_nodes import ast_to_dict
 from .bytecode import CompiledProgram
 from .driver import CompileResult, compile_source
+from .ide import launch_ide
 from .napoli import LaccettiMood, NapoliMatch, fetch_latest_napoli_match
 from .repl import start_repl
 from .vm import PLikeRuntimeError, PLikeVM
@@ -283,6 +284,20 @@ def build_parser() -> argparse.ArgumentParser:
     p_repl = sub.add_parser("repl", help="Avvia la shell interattiva P-Like")
     p_repl.add_argument("--napoli", default="auto", help="Modalita Variabile Napoli iniziale (default: auto)")
     p_repl.set_defaults(func=lambda a: start_repl(napoli_mode=a.napoli))
+
+    p_ide = sub.add_parser("ide", help="Avvia P-Like Studio, il Web IDE locale con tema Azzurro Napoli")
+    p_ide.add_argument("file", nargs="?", default=None, help="File .plike opzionale da aprire (e salvare su disco)")
+    p_ide.add_argument("--port", type=int, default=8765, help="Porta HTTP locale (default: 8765)")
+    p_ide.add_argument("--no-browser", action="store_true", help="Non aprire automaticamente il browser")
+    p_ide.add_argument("--napoli", default="auto", help="Modalita Variabile Napoli iniziale (default: auto)")
+    p_ide.set_defaults(
+        func=lambda a: launch_ide(
+            port=a.port,
+            open_browser=not a.no_browser,
+            initial_file=a.file,
+            default_napoli=a.napoli,
+        )
+    )
 
     return parser
 

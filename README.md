@@ -5,6 +5,7 @@ Implementazione completa del linguaggio didattico **P-Like (Pascal-Like)** nato 
 - **Compilatore multi-stadio reale**: Lexer, Parser a discesa ricorsiva con error recovery, Analizzatore Semantico & Type-Checker, Compilatore verso **Bytecode P-Like (`.plbc`)** + **Virtual Machine dedicata**.
 - **Doppio Transpiler**: compilazione diretta da P-Like a **C99 (`.c`)** e **Python 3 (`.py`)**.
 - **La Variabile "Partite del Napoli"**: fedele alla leggenda universitaria federiciana, l'esito della compilazione dipende dalle regole ufficiali del P-Like **combinate con il risultato live dell'ultima partita ufficiale dell'SSC Napoli**!
+- **P-Like Studio (IDE Grafico locale)**: avvia `plike ide` per aprire un IDE moderno in stile VS Code + **tema Azzurro Napoli** nel browser (zero dipendenze esterne) con syntax highlighting live, numeri di riga, diagnostiche cliccabili, widget live SSC Napoli con barra umore Prof. Laccetti, console + input `read`, disassembler Bytecode, codice C99/Python generato, AST ed esplora-esempi!
 - **Zero dipendenze esterne**: pura Python Standard Library (`Python >= 3.9`).
 
 ---
@@ -73,6 +74,10 @@ plike ast examples/hello.plike
 # Valuta un file senza eseguirlo (modalità correzione compito scritto)
 plike check examples/stile_non_canonico.plike --napoli draw
 plike check examples/stile_non_canonico.plike --napoli loss
+
+# Avvia P-Like Studio — IDE grafico locale nel browser!
+plike ide
+plike ide examples/esame_studente.plike --napoli win
 
 # Shell interattiva (REPL)
 plike repl

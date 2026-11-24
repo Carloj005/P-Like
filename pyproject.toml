@@ -29,3 +29,6 @@ plike = "plike.pygments_lexer:PLikeLexer"
 
 [tool.setuptools.packages.find]
 include = ["plike*"]
+
+[tool.setuptools.package-data]
+"plike.ide" = ["static/*"]
