@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "p-like"
-version = "1.0.0"
+version = "1.1.0"
 description = "Compilatore, Virtual Machine e transpiler C99/Python per il linguaggio didattico P-Like (Prof. Giuliano Laccetti - UNINA Federico II), con Variabile Partite del Napoli."
 readme = "README.md"
 license = {text = "MIT"}

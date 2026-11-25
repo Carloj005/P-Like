@@ -1,14 +1,14 @@
-"""P-Like Studio — Applicazione Desktop Nativa Windows (Tkinter Dark + Tema Azzurro SSC Napoli).
+"""P-Like Studio — Applicazione Desktop Nativa Windows & Linux (Tkinter Dark + Tema Azzurro SSC Napoli).
 
 Zero dipendenze esterne a runtime! Include:
-- Finestra Windows nativa con barra del titolo scura (DWM Win11/10) e supporto High-DPI
+- Finestra nativa Windows (barra titolo scura DWM + High-DPI) e Linux (X11/Wayland, font adattivi, icona PNG, .desktop)
 - Barra live SSC Napoli con risultato partita reale, barra umore Prof. Laccetti a 5 livelli e simulatore
-- Sidebar esplora esempi P-Like (funziona anche dentro l'eseguibile PyInstaller .exe!)
+- Sidebar esplora esempi P-Like (funziona anche dentro eseguibili PyInstaller Windows .exe e Linux AppImage!)
 - Editor P-Like con syntax highlighting in tempo reale, numeri di riga e indicatori errore/perdonato
 - Dock INPUT (read / stdin)
 - Card Verdetto Prof. Laccetti con voto 0-30 e Lode / BOCCIATO e commento del prof
 - 6 schede output: Console, Diagnostiche cliccabili (salta alla riga!), Bytecode, C99, Python, AST
-- Apertura, salvataggio ed esportazione file .plike / .c / .py / .plbc con finestre di dialogo Windows native
+- Apertura, salvataggio ed esportazione file .plike / .c / .py / .plbc con finestre di dialogo di sistema
 """
 
 from __future__ import annotations
@@ -23,7 +23,7 @@ import threading
 import time
 import tkinter as tk
 from pathlib import Path
-from tkinter import filedialog, messagebox, ttk
+from tkinter import filedialog, font as tkfont, messagebox, ttk
 from typing import Any, Dict, List, Optional, Tuple
 
 from . import __version__
@@ -149,6 +149,57 @@ def _find_icon_path() -> Optional[Path]:
     return None
 
 
+def _find_png_icon_path() -> Optional[Path]:
+    root = _resource_root()
+    for rel in ("assets/plike.png", "plike.png"):
+        cand = root / rel
+        if cand.is_file():
+            return cand
+    return None
+
+
+def _resolve_fonts(root: tk.Tk) -> Tuple[str, str]:
+    """Seleziona i migliori font UI e Monospace disponibili sul sistema operativo (Windows / Linux / macOS)."""
+    try:
+        available = {f.lower(): f for f in tkfont.families(root)}
+    except Exception:
+        available = {}
+
+    if sys.platform == "win32":
+        ui_candidates = ("Segoe UI", "Arial", "Helvetica", "TkDefaultFont")
+        mono_candidates = ("Consolas", "Cascadia Mono", "Courier New", "TkFixedFont")
+    elif sys.platform == "darwin":
+        ui_candidates = ("SF Pro Text", "Helvetica Neue", "Helvetica", "TkDefaultFont")
+        mono_candidates = ("Menlo", "Monaco", "Courier", "TkFixedFont")
+    else:
+        # Tutte le distribuzioni Linux (Ubuntu, Debian, Fedora, Arch, Mint, openSUSE, ecc.)
+        ui_candidates = ("Ubuntu", "Cantarell", "Noto Sans", "DejaVu Sans", "Liberation Sans", "FreeSans", "TkDefaultFont")
+        mono_candidates = (
+            "JetBrains Mono",
+            "Fira Code",
+            "Ubuntu Mono",
+            "DejaVu Sans Mono",
+            "Liberation Mono",
+            "Noto Sans Mono",
+            "Monospace",
+            "TkFixedFont",
+        )
+
+    ui_font = "TkDefaultFont"
+    for cand in ui_candidates:
+        if cand.lower() in available:
+            ui_font = available[cand.lower()]
+            break
+
+    mono_font = "TkFixedFont"
+    for cand in mono_candidates:
+        if cand.lower() in available:
+            mono_font = available[cand.lower()]
+            break
+
+    return ui_font, mono_font
+
+
 def _enable_windows_high_dpi_and_dark_bar(window: tk.Tk) -> None:
     if sys.platform != "win32":
         return
@@ -178,12 +229,33 @@ class PLikeDesktopIDE:
         self.root.minsize(1020, 640)
         self.root.configure(bg=C_BG_APP)
 
-        ico = _find_icon_path()
-        if ico is not None:
+        self.ui_font, self.mono_font = _resolve_fonts(self.root)
+        self._icon_photo: Optional[tk.PhotoImage] = None
+
+        # Icona finestra cross-platform (.ico su Windows, .png via iconphoto su Linux/macOS e fallback)
+        if sys.platform == "win32":
+            ico = _find_icon_path()
+            if ico is not None:
+                try:
+                    self.root.iconbitmap(str(ico))
+                except Exception:
+                    pass
+        png = _find_png_icon_path()
+        if png is not None:
             try:
-                self.root.iconbitmap(str(ico))
+                self._icon_photo = tk.PhotoImage(file=str(png))
+                self.root.iconphoto(True, self._icon_photo)
             except Exception:
-                pass
+                self._icon_photo = None
+
+        # Tema scuro anche per il menu a tendina della Combobox (essenziale su Linux clam)
+        try:
+            self.root.option_add("*TCombobox*Listbox.background", C_BG_INPUT)
+            self.root.option_add("*TCombobox*Listbox.foreground", C_TEXT)
+            self.root.option_add("*TCombobox*Listbox.selectBackground", C_AZZURRO_DEEP)
+            self.root.option_add("*TCombobox*Listbox.selectForeground", "#ffffff")
+        except Exception:
+            pass
 
         self.current_file: Optional[Path] = None
         self.is_dirty: bool = False
@@ -231,7 +303,7 @@ class PLikeDesktopIDE:
         except Exception:
             pass
 
-        style.configure(".", background=C_BG_SURF, foreground=C_TEXT, font=("Segoe UI", 10))
+        style.configure(".", background=C_BG_SURF, foreground=C_TEXT, font=(self.ui_font, 10))
         style.configure("TFrame", background=C_BG_SURF)
         style.configure("App.TFrame", background=C_BG_APP)
         style.configure("TPanedwindow", background=C_BORDER)
@@ -245,7 +317,7 @@ class PLikeDesktopIDE:
             foreground=C_TEXT_MUTED,
             padding=[11, 6],
             borderwidth=0,
-            font=("Segoe UI Semibold", 9),
+            font=(self.ui_font, 9, "bold"),
         )
         style.map(
             "Dark.TNotebook.Tab",
@@ -261,14 +333,14 @@ class PLikeDesktopIDE:
             foreground=C_TEXT,
             borderwidth=0,
             rowheight=24,
-            font=("Segoe UI", 9),
+            font=(self.ui_font, 9),
         )
         style.configure(
             "Dark.Treeview.Heading",
             background=C_BG_ELEV,
             foreground=C_TEXT_MUTED,
             borderwidth=0,
-            font=("Segoe UI Semibold", 9),
+            font=(self.ui_font, 9, "bold"),
         )
         style.map(
             "Dark.Treeview",
@@ -361,17 +433,17 @@ class PLikeDesktopIDE:
         crest_canvas = tk.Canvas(bar, width=36, height=36, bg="#0c182b", highlightthickness=0)
         crest_canvas.pack(side=tk.LEFT, padx=(12, 8), pady=8)
         crest_canvas.create_oval(2, 2, 34, 34, fill=C_AZZURRO, outline="#e0f2fe", width=2)
-        crest_canvas.create_text(18, 18, text="P", fill="#ffffff", font=("Segoe UI", 14, "bold"))
+        crest_canvas.create_text(18, 18, text="P", fill="#ffffff", font=(self.ui_font, 14, "bold"))
 
         brand_box = tk.Frame(bar, bg="#0c182b")
         brand_box.pack(side=tk.LEFT)
-        tk.Label(brand_box, text="P-Like Studio", bg="#0c182b", fg="#f0f9ff", font=("Segoe UI", 12, "bold")).pack(anchor="w")
-        tk.Label(brand_box, text="Prof. Giuliano Laccetti · UNINA Federico II", bg="#0c182b", fg=C_TEXT_MUTED, font=("Segoe UI", 8)).pack(anchor="w")
+        tk.Label(brand_box, text="P-Like Studio", bg="#0c182b", fg="#f0f9ff", font=(self.ui_font, 12, "bold")).pack(anchor="w")
+        tk.Label(brand_box, text="Prof. Giuliano Laccetti · UNINA Federico II", bg="#0c182b", fg=C_TEXT_MUTED, font=(self.ui_font, 8)).pack(anchor="w")
 
         # Nome file attivo
         file_box = tk.Frame(bar, bg=C_BG_INPUT, highlightthickness=1, highlightbackground=C_BORDER, padx=10, pady=4)
         file_box.pack(side=tk.LEFT, padx=24)
-        self.lbl_filename = tk.Label(file_box, textvariable=self.filename_var, bg=C_BG_INPUT, fg=C_TEXT, font=("Consolas", 10))
+        self.lbl_filename = tk.Label(file_box, textvariable=self.filename_var, bg=C_BG_INPUT, fg=C_TEXT, font=(self.mono_font, 10))
         self.lbl_filename.pack(side=tk.LEFT)
 
         # Pulsanti azione a destra
@@ -386,7 +458,7 @@ class PLikeDesktopIDE:
             activebackground="#0284c7",
             activeforeground="#ffffff",
             relief=tk.FLAT,
-            font=("Segoe UI", 10, "bold"),
+            font=(self.ui_font, 10, "bold"),
             cursor="hand2",
             pady=5,
             command=lambda: self.run_or_check(True),
@@ -403,7 +475,7 @@ class PLikeDesktopIDE:
             relief=tk.FLAT,
             highlightthickness=1,
             highlightbackground=C_BORDER,
-            font=("Segoe UI", 9, "bold"),
+            font=(self.ui_font, 9, "bold"),
             cursor="hand2",
             pady=5,
             command=lambda: self.run_or_check(False),
@@ -420,7 +492,7 @@ class PLikeDesktopIDE:
             relief=tk.FLAT,
             highlightthickness=1,
             highlightbackground=C_BORDER,
-            font=("Segoe UI", 9),
+            font=(self.ui_font, 9),
             cursor="hand2",
             pady=5,
             command=self.save_file,
@@ -436,7 +508,7 @@ class PLikeDesktopIDE:
             relief=tk.FLAT,
             highlightthickness=1,
             highlightbackground=C_BORDER,
-            font=("Segoe UI", 9),
+            font=(self.ui_font, 9),
             cursor="hand2",
             pady=5,
             command=self.show_cheatsheet,
@@ -456,7 +528,7 @@ class PLikeDesktopIDE:
             text=" NAPOLI ",
             bg=C_AZZURRO_DEEP,
             fg="#e0f2fe",
-            font=("Segoe UI", 8, "bold"),
+            font=(self.ui_font, 8, "bold"),
             padx=7,
             pady=4,
         )
@@ -470,7 +542,7 @@ class PLikeDesktopIDE:
             text="Recupero ultima partita SSC Napoli...",
             bg=C_BG_SURF,
             fg="#f8fafc",
-            font=("Segoe UI", 10, "bold"),
+            font=(self.ui_font, 10, "bold"),
         )
         self.lbl_scoreboard.pack(anchor="w")
         self.lbl_match_meta = tk.Label(
@@ -478,7 +550,7 @@ class PLikeDesktopIDE:
             text="Connessione live in corso",
             bg=C_BG_SURF,
             fg=C_TEXT_MUTED,
-            font=("Segoe UI", 8),
+            font=(self.ui_font, 8),
         )
         self.lbl_match_meta.pack(anchor="w")
 
@@ -490,9 +562,9 @@ class PLikeDesktopIDE:
         top_m = tk.Frame(mid, bg=C_BG_SURF)
         top_m.pack(fill=tk.X)
         self.napoli_top_m = top_m
-        self.lbl_mood_caption = tk.Label(top_m, text="UMORE PROF:", bg=C_BG_SURF, fg=C_TEXT_MUTED, font=("Segoe UI", 8, "bold"))
+        self.lbl_mood_caption = tk.Label(top_m, text="UMORE PROF:", bg=C_BG_SURF, fg=C_TEXT_MUTED, font=(self.ui_font, 8, "bold"))
         self.lbl_mood_caption.pack(side=tk.LEFT)
-        self.lbl_mood_val = tk.Label(top_m, text="STANDARD", bg=C_BG_SURF, fg=C_AZZURRO_BRIGHT, font=("Segoe UI", 8, "bold"))
+        self.lbl_mood_val = tk.Label(top_m, text="STANDARD", bg=C_BG_SURF, fg=C_AZZURRO_BRIGHT, font=(self.ui_font, 8, "bold"))
         self.lbl_mood_val.pack(side=tk.LEFT, padx=(6, 0))
 
         self.mood_canvas = tk.Canvas(mid, width=190, height=10, bg=C_BG_SURF, highlightthickness=0)
@@ -508,7 +580,7 @@ class PLikeDesktopIDE:
         right.pack(side=tk.RIGHT)
         self.napoli_right_frame = right
 
-        self.lbl_mode_caption = tk.Label(right, text="Modalità:", bg=C_BG_SURF, fg=C_TEXT_MUTED, font=("Segoe UI", 9))
+        self.lbl_mode_caption = tk.Label(right, text="Modalità:", bg=C_BG_SURF, fg=C_TEXT_MUTED, font=(self.ui_font, 9))
         self.lbl_mode_caption.pack(side=tk.LEFT, padx=(0, 4))
 
         self.cmb_napoli = ttk.Combobox(
@@ -531,11 +603,11 @@ class PLikeDesktopIDE:
             selectcolor=C_BG_INPUT,
             activebackground=C_BG_SURF,
             activeforeground=C_TEXT,
-            font=("Segoe UI", 9),
+            font=(self.ui_font, 9),
         )
         self.chk_noluck.pack(side=tk.LEFT, padx=(0, 8))
 
-        self.lbl_seed_caption = tk.Label(right, text="Seed:", bg=C_BG_SURF, fg=C_TEXT_MUTED, font=("Segoe UI", 9))
+        self.lbl_seed_caption = tk.Label(right, text="Seed:", bg=C_BG_SURF, fg=C_TEXT_MUTED, font=(self.ui_font, 9))
         self.lbl_seed_caption.pack(side=tk.LEFT)
         tk.Entry(
             right,
@@ -547,7 +619,7 @@ class PLikeDesktopIDE:
             relief=tk.FLAT,
             highlightthickness=1,
             highlightbackground=C_BORDER,
-            font=("Consolas", 9),
+            font=(self.mono_font, 9),
         ).pack(side=tk.LEFT, padx=(4, 8))
 
         tk.Button(
@@ -560,7 +632,7 @@ class PLikeDesktopIDE:
             relief=tk.FLAT,
             highlightthickness=1,
             highlightbackground=C_BORDER,
-            font=("Segoe UI", 10, "bold"),
+            font=(self.ui_font, 10, "bold"),
             cursor="hand2",
             padx=7,
             command=lambda: self._refresh_napoli_async(force_refresh=True),
@@ -574,7 +646,7 @@ class PLikeDesktopIDE:
         sidebar = tk.Frame(self.paned, bg=C_BG_SURF, width=240)
         sb_hdr = tk.Frame(sidebar, bg=C_BG_ELEV, padx=8, pady=7)
         sb_hdr.pack(fill=tk.X)
-        tk.Label(sb_hdr, text="ESPLORA ESEMPI P-LIKE", bg=C_BG_ELEV, fg=C_TEXT_MUTED, font=("Segoe UI", 8, "bold")).pack(anchor="w")
+        tk.Label(sb_hdr, text="ESPLORA ESEMPI P-LIKE", bg=C_BG_ELEV, fg=C_TEXT_MUTED, font=(self.ui_font, 8, "bold")).pack(anchor="w")
 
         sb_btns = tk.Frame(sb_hdr, bg=C_BG_ELEV)
         sb_btns.pack(fill=tk.X, pady=(6, 0))
@@ -589,7 +661,7 @@ class PLikeDesktopIDE:
                 relief=tk.FLAT,
                 highlightthickness=1,
                 highlightbackground=C_BORDER,
-                font=("Segoe UI", 8),
+                font=(self.ui_font, 8),
                 cursor="hand2",
                 padx=7,
                 pady=2,
@@ -611,8 +683,8 @@ class PLikeDesktopIDE:
         editor_frame = tk.Frame(center_paned, bg=C_BG_INPUT)
         ed_hdr = tk.Frame(editor_frame, bg=C_BG_SURF, padx=10, pady=5, highlightthickness=1, highlightbackground=C_BORDER)
         ed_hdr.pack(fill=tk.X)
-        tk.Label(ed_hdr, text="● Editor P-Like", bg=C_BG_SURF, fg=C_AZZURRO_BRIGHT, font=("Segoe UI", 9, "bold")).pack(side=tk.LEFT)
-        tk.Label(ed_hdr, textvariable=self.cursor_var, bg=C_BG_SURF, fg=C_TEXT_MUTED, font=("Consolas", 9)).pack(side=tk.RIGHT)
+        tk.Label(ed_hdr, text="● Editor P-Like", bg=C_BG_SURF, fg=C_AZZURRO_BRIGHT, font=(self.ui_font, 9, "bold")).pack(side=tk.LEFT)
+        tk.Label(ed_hdr, textvariable=self.cursor_var, bg=C_BG_SURF, fg=C_TEXT_MUTED, font=(self.mono_font, 9)).pack(side=tk.RIGHT)
 
         ed_body = tk.Frame(editor_frame, bg=C_BG_INPUT)
         ed_body.pack(fill=tk.BOTH, expand=True)
@@ -627,7 +699,7 @@ class PLikeDesktopIDE:
             insertbackground=C_AZZURRO_BRIGHT,
             selectbackground="#184a75",
             selectforeground="#ffffff",
-            font=("Consolas", 11),
+            font=(self.mono_font, 11),
             undo=True,
             maxundo=-1,
             wrap=tk.NONE,
@@ -648,33 +720,40 @@ class PLikeDesktopIDE:
         # Configura tag syntax highlighting
         self.editor.tag_configure("active_line", background=C_BG_ACTIVE_LINE)
         self.editor.tag_configure("diag_line_err", background="#2d141d")
-        self.editor.tag_configure("kw", foreground=SYN_KW, font=("Consolas", 11, "bold"))
+        self.editor.tag_configure("kw", foreground=SYN_KW, font=(self.mono_font, 11, "bold"))
         self.editor.tag_configure("type", foreground=SYN_TYPE)
-        self.editor.tag_configure("const", foreground=SYN_CONST, font=("Consolas", 11, "bold"))
+        self.editor.tag_configure("const", foreground=SYN_CONST, font=(self.mono_font, 11, "bold"))
         self.editor.tag_configure("num", foreground=SYN_NUM)
         self.editor.tag_configure("str", foreground=SYN_STR)
         self.editor.tag_configure("op", foreground=SYN_OP)
-        self.editor.tag_configure("cmt", foreground=SYN_CMT, font=("Consolas", 11, "italic"))
+        self.editor.tag_configure("cmt", foreground=SYN_CMT, font=(self.mono_font, 11, "italic"))
 
         self.editor.bind("<KeyRelease>", self._on_editor_change)
         self.editor.bind("<ButtonRelease-1>", lambda _e: self._update_cursor_and_gutter())
         self.editor.bind("<Configure>", lambda _e: self._redraw_gutter())
         self.editor.bind("<Tab>", self._handle_tab)
         self.editor.bind("<Shift-Tab>", self._handle_shift_tab)
+        try:
+            self.editor.bind("<ISO_Left_Tab>", self._handle_shift_tab)
+        except tk.TclError:
+            pass
+        self.gutter.bind("<MouseWheel>", self._on_gutter_wheel)
+        self.gutter.bind("<Button-4>", lambda _e: self._scroll_editor_units(-3))
+        self.gutter.bind("<Button-5>", lambda _e: self._scroll_editor_units(3))
 
         # Dock STDIN
         stdin_frame = tk.Frame(center_paned, bg=C_BG_SURF, height=110)
         st_hdr = tk.Frame(stdin_frame, bg=C_BG_SURF, padx=10, pady=4)
         st_hdr.pack(fill=tk.X)
-        tk.Label(st_hdr, text="INPUT (read / stdin)", bg=C_BG_SURF, fg=C_TEXT_MUTED, font=("Segoe UI", 8, "bold")).pack(side=tk.LEFT)
-        tk.Label(st_hdr, text="Valori separati da spazi o a capo prima di premere Esegui", bg=C_BG_SURF, fg=C_TEXT_DIM, font=("Segoe UI", 8)).pack(side=tk.RIGHT)
+        tk.Label(st_hdr, text="INPUT (read / stdin)", bg=C_BG_SURF, fg=C_TEXT_MUTED, font=(self.ui_font, 8, "bold")).pack(side=tk.LEFT)
+        tk.Label(st_hdr, text="Valori separati da spazi o a capo prima di premere Esegui", bg=C_BG_SURF, fg=C_TEXT_DIM, font=(self.ui_font, 8)).pack(side=tk.RIGHT)
 
         self.stdin_text = tk.Text(
             stdin_frame,
             bg=C_BG_INPUT,
             fg=C_TEXT,
             insertbackground=C_AZZURRO_BRIGHT,
-            font=("Consolas", 10),
+            font=(self.mono_font, 10),
             height=4,
             relief=tk.FLAT,
             highlightthickness=1,
@@ -706,8 +785,8 @@ class PLikeDesktopIDE:
 
         v_left = tk.Frame(v_top, bg=C_BG_ELEV)
         v_left.pack(side=tk.LEFT, fill=tk.X, expand=True)
-        tk.Label(v_left, text="ESITO COMPILAZIONE & ESAME", bg=C_BG_ELEV, fg=C_TEXT_MUTED, font=("Segoe UI", 7, "bold")).pack(anchor="w")
-        self.lbl_verdict_status = tk.Label(v_left, text="Pronto a compilare", bg=C_BG_ELEV, fg=C_TEXT, font=("Segoe UI", 11, "bold"))
+        tk.Label(v_left, text="ESITO COMPILAZIONE & ESAME", bg=C_BG_ELEV, fg=C_TEXT_MUTED, font=(self.ui_font, 7, "bold")).pack(anchor="w")
+        self.lbl_verdict_status = tk.Label(v_left, text="Pronto a compilare", bg=C_BG_ELEV, fg=C_TEXT, font=(self.ui_font, 11, "bold"))
         self.lbl_verdict_status.pack(anchor="w")
 
         self.lbl_grade = tk.Label(
@@ -715,7 +794,7 @@ class PLikeDesktopIDE:
             text=" --/30 ",
             bg=C_BG_INPUT,
             fg=C_TEXT,
-            font=("Consolas", 11, "bold"),
+            font=(self.mono_font, 11, "bold"),
             padx=8,
             pady=4,
             highlightthickness=1,
@@ -728,7 +807,7 @@ class PLikeDesktopIDE:
             text="Premi Esegui (F5 o Ctrl+Enter) per compilare con la Variabile Napoli!",
             bg=C_BG_ELEV,
             fg="#cfe0f5",
-            font=("Segoe UI", 9),
+            font=(self.ui_font, 9),
             justify=tk.LEFT,
             wraplength=420,
         )
@@ -739,7 +818,7 @@ class PLikeDesktopIDE:
             text="",
             bg=C_BG_ELEV,
             fg=C_AZZURRO_BRIGHT,
-            font=("Segoe UI", 8, "bold"),
+            font=(self.ui_font, 8, "bold"),
             anchor="w",
         )
         self.lbl_verdict_stats.pack(fill=tk.X)
@@ -811,13 +890,13 @@ class PLikeDesktopIDE:
 
         bar = tk.Frame(frame, bg="#0b1526", padx=8, pady=4)
         bar.pack(fill=tk.X)
-        tk.Label(bar, text=title, bg="#0b1526", fg=C_TEXT_MUTED, font=("Segoe UI", 8, "bold")).pack(side=tk.LEFT)
+        tk.Label(bar, text=title, bg="#0b1526", fg=C_TEXT_MUTED, font=(self.ui_font, 8, "bold")).pack(side=tk.LEFT)
 
         txt = tk.Text(
             frame,
             bg=C_BG_INPUT,
             fg="#e2f1ff",
-            font=("Consolas", 10),
+            font=(self.mono_font, 10),
             relief=tk.FLAT,
             wrap=tk.NONE,
             padx=10,
@@ -838,7 +917,7 @@ class PLikeDesktopIDE:
             activebackground=C_AZZURRO_DEEP,
             activeforeground="#fff",
             relief=tk.FLAT,
-            font=("Segoe UI", 8),
+            font=(self.ui_font, 8),
             cursor="hand2",
             padx=8,
             command=_copy,
@@ -853,7 +932,7 @@ class PLikeDesktopIDE:
                 activebackground=C_AZZURRO_DEEP,
                 activeforeground="#fff",
                 relief=tk.FLAT,
-                font=("Segoe UI", 8, "bold"),
+                font=(self.ui_font, 8, "bold"),
                 cursor="hand2",
                 padx=8,
                 command=export_cmd,
@@ -873,13 +952,13 @@ class PLikeDesktopIDE:
         bar = tk.Frame(self.root, bg=C_AZZURRO_DEEP, height=24, padx=10)
         bar.pack(fill=tk.X, side=tk.BOTTOM)
         bar.pack_propagate(False)
-        tk.Label(bar, textvariable=self.status_var, bg=C_AZZURRO_DEEP, fg="#e0f2fe", font=("Segoe UI", 8)).pack(side=tk.LEFT)
+        tk.Label(bar, textvariable=self.status_var, bg=C_AZZURRO_DEEP, fg="#e0f2fe", font=(self.ui_font, 8)).pack(side=tk.LEFT)
         tk.Label(
             bar,
             text=f"P-Like v{__version__} · F5 / Ctrl+Enter: Esegui · Ctrl+Shift+B: Verifica · Ctrl+S: Salva",
             bg=C_AZZURRO_DEEP,
             fg="#bae6fd",
-            font=("Segoe UI", 8),
+            font=(self.ui_font, 8),
         ).pack(side=tk.RIGHT)
 
     def _bind_shortcuts(self) -> None:
@@ -903,6 +982,15 @@ class PLikeDesktopIDE:
     def _on_editor_yview(self, first: str, last: str) -> None:
         self.ed_vscroll.set(first, last)
         self._redraw_gutter()
+
+    def _scroll_editor_units(self, units: int) -> str:
+        self.editor.yview_scroll(units, "units")
+        self._redraw_gutter()
+        return "break"
+
+    def _on_gutter_wheel(self, event: tk.Event) -> str:
+        delta = -1 if event.delta > 0 else 1
+        return self._scroll_editor_units(delta * 3)
 
     def _handle_tab(self, _event: tk.Event) -> str:
         self.editor.insert(tk.INSERT, "    ")
@@ -953,7 +1041,7 @@ class PLikeDesktopIDE:
                 anchor="ne",
                 text=str(linenum),
                 fill=C_TEXT_DIM,
-                font=("Consolas", 10),
+                font=(self.mono_font, 10),
             )
             nxt = self.editor.index(f"{i}+1line")
             if nxt == i:
@@ -1407,7 +1495,7 @@ class PLikeDesktopIDE:
         win.title("Guida Rapida Sintassi P-Like (Prof. Giuliano Laccetti)")
         win.geometry("760x560")
         win.configure(bg=C_BG_SURF)
-        txt = tk.Text(win, bg=C_BG_INPUT, fg=C_TEXT, font=("Consolas", 10), relief=tk.FLAT, padx=14, pady=12)
+        txt = tk.Text(win, bg=C_BG_INPUT, fg=C_TEXT, font=(self.mono_font, 10), relief=tk.FLAT, padx=14, pady=12)
         txt.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         guide = """=== GUIDA RAPIDA P-LIKE CANONICO (PROF. GIULIANO LACCETTI) ===
 
@@ -1476,7 +1564,7 @@ class PLikeDesktopIDE:
         messagebox.showinfo(
             "P-Like Studio",
             f"P-Like Studio v{__version__}\n\n"
-            "Compilatore, Bytecode VM, Transpiler C99/Python e IDE Windows\n"
+            "Compilatore, Bytecode VM, Transpiler C99/Python e IDE Desktop Windows/Linux\n"
             "per il linguaggio didattico P-Like del Prof. Giuliano Laccetti\n"
             "(Università degli Studi di Napoli Federico II).\n\n"
             "Include la Variabile Live 'Partite dell'SSC Napoli'!\n"
@@ -1485,7 +1573,7 @@ class PLikeDesktopIDE:
 
 
 def launch_gui(initial_file: Optional[str] = None, default_napoli: str = "auto") -> int:
-    """Avvia l'applicazione desktop Windows nativa P-Like Studio."""
+    """Avvia l'applicazione desktop nativa P-Like Studio (Windows & Linux)."""
     if sys.platform == "win32":
         try:
             ctypes.windll.shcore.SetProcessDpiAwareness(1)
@@ -1495,7 +1583,7 @@ def launch_gui(initial_file: Optional[str] = None, default_napoli: str = "auto")
             except Exception:
                 pass
 
-    root = tk.Tk()
+    root = tk.Tk(className="P-Like-Studio")
     PLikeDesktopIDE(root, initial_file=initial_file, default_napoli=default_napoli)
     root.mainloop()
     return 0

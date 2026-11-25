@@ -1,0 +1,11 @@
+# Assicura line ending LF su script Linux/POSIX e metadati desktop anche su Windows
+*.sh text eol=lf
+*.desktop text eol=lf
+*.xml text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.py text eol=lf
+*.plike text eol=lf
+*.md text eol=lf
+*.png binary
+*.ico binary

@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=P-Like Studio
+GenericName=P-Like Educational IDE
+Comment=Compilatore, Virtual Machine e IDE P-Like (Prof. Giuliano Laccetti - UNINA Federico II)
+Exec=P-Like-Studio %F
+Icon=p-like-studio
+Terminal=false
+Categories=Development;IDE;Education;
+Keywords=plike;pascal;compiler;ide;napoli;laccetti;unina;federico;
+MimeType=text/x-plike;
+StartupWMClass=P-Like-Studio
+StartupNotify=true

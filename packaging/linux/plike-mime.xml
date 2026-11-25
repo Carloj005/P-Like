@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="text/x-plike">
+    <comment>P-Like Source Code (Prof. Giuliano Laccetti)</comment>
+    <comment xml:lang="it">Codice Sorgente P-Like (Prof. Giuliano Laccetti)</comment>
+    <sub-class-of type="text/plain"/>
+    <glob pattern="*.plike"/>
+    <icon name="p-like-studio"/>
+  </mime-type>
+</mime-info>

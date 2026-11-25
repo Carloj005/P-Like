@@ -5,7 +5,10 @@ Implementazione completa del linguaggio didattico **P-Like (Pascal-Like)** nato 
 - **Compilatore multi-stadio reale**: Lexer, Parser a discesa ricorsiva con error recovery, Analizzatore Semantico & Type-Checker, Compilatore verso **Bytecode P-Like (`.plbc`)** + **Virtual Machine dedicata**.
 - **Doppio Transpiler**: compilazione diretta da P-Like a **C99 (`.c`)** e **Python 3 (`.py`)**.
 - **La Variabile "Partite del Napoli"**: fedele alla leggenda universitaria federiciana, l'esito della compilazione dipende dalle regole ufficiali del P-Like **combinate con il risultato live dell'ultima partita ufficiale dell'SSC Napoli**!
-- **App Desktop Windows Nativa + Eseguibile `.exe`** (`plike gui` / `P-Like-Studio.exe` e `plike.exe`): finestra Windows nativa con barra scura DWM, icona Azzurro Napoli, supporto High-DPI, syntax highlighting live, numeri di riga, diagnostiche cliccabili, widget live SSC Napoli, console + stdin e 6 schede output (Console, Diagnostiche, Bytecode, C99, Python, AST), compilabile in eseguibili standalone `.exe` con `python build_exe.py`!
+- **App Desktop Nativa Windows & Linux + Eseguibili Standalone** (`plike gui`):
+  - **Windows**: `P-Like-Studio.exe` + `plike.exe` (barra scura DWM Win10/11, High-DPI, icona Azzurro Napoli, generabili con `python build_exe.py`).
+  - **Linux (tutte le distribuzioni)**: `P-Like-Studio-x86_64.AppImage` (doppio clic universale), `P-Like-Linux-x86_64.tar.gz` (con `install.sh`, voce di menu `.desktop`, icona e associazione MIME `.plike`), `plike-linux-x86_64` (CLI standalone) e installer universale da sorgente `packaging/linux/install-from-source.sh` per qualsiasi distro e architettura (inclusi ARM64/Raspberry Pi, Alpine, NixOS).
+  - Include syntax highlighting live, numeri di riga, diagnostiche cliccabili, widget live SSC Napoli, console + stdin e 6 schede output (Console, Diagnostiche, Bytecode, C99, Python, AST).
 - **P-Like Studio Web IDE** (`plike ide`): versione web locale in stile VS Code + tema Azzurro Napoli nel browser (zero dipendenze esterne).
 - **Zero dipendenze esterne**: pura Python Standard Library (`Python >= 3.9`).
 
@@ -32,7 +35,43 @@ Puoi sempre simulare qualsiasi scenario da CLI con `--napoli auto|win|big-win|dr
 
 ---
 
-## Installazione Rapida
+## Download & Installazione Rapida (Windows & Linux)
+
+### Eseguibili pronti (GitHub Releases — zero installazione di Python)
+Scarica l'ultima release da **[GitHub Releases](https://github.com/Carloj005/P-Like/releases)**:
+
+#### Windows 10 / 11
+- **`P-Like-Studio.exe`** — Doppio clic e avvii subito l'IDE Desktop completo.
+- **`plike.exe`** — Compilatore CLI standalone da PowerShell / Prompt dei Comandi.
+
+#### Linux — Tutte le distribuzioni (Ubuntu, Debian, Fedora, Arch, Mint, Pop!_OS, openSUSE, Manjaro...)
+1. **AppImage universale (consigliata — 1 file, zero installazione)**:
+   ```bash
+   chmod +x P-Like-Studio-x86_64.AppImage
+   ./P-Like-Studio-x86_64.AppImage
+   # (se la distro non ha libfuse2: ./P-Like-Studio-x86_64.AppImage --appimage-extract-and-run)
+   # Puoi anche usare la CLI integrata nell'AppImage:
+   ./P-Like-Studio-x86_64.AppImage --cli napoli
+   ```
+2. **Pacchetto portatile `.tar.gz` (con integrazione nel menu applicazioni e `.plike` MIME)**:
+   ```bash
+   tar -xzf P-Like-Linux-x86_64.tar.gz
+   cd P-Like-Linux-x86_64
+   ./install.sh          # installa in ~/.local (senza sudo), oppure: sudo ./install.sh --system
+   ```
+3. **CLI Standalone Linux (1 file)**:
+   ```bash
+   chmod +x plike-linux-x86_64
+   ./plike-linux-x86_64 napoli
+   ```
+4. **Qualsiasi distro / architettura da sorgente (anche ARM64 / Raspberry Pi / Alpine / Void / NixOS)**:
+   ```bash
+   git clone https://github.com/Carloj005/P-Like.git
+   cd P-Like
+   ./packaging/linux/install-from-source.sh
+   ```
+
+### Da sorgente Python (Windows / Linux / macOS)
 
 ```bash
 git clone https://github.com/Carloj005/P-Like.git
@@ -43,6 +82,10 @@ pip install -e .
 
 # Opzione 2: uso diretto senza installazione
 python -m plike --help
+
+# Compilare gli eseguibili standalone localmente:
+python build_exe.py                              # su Windows -> dist/*.exe
+python3 build_linux.py --download-appimagetool   # su Linux   -> dist/*.AppImage, *.tar.gz, plike-linux-*
 ```
 
 ---
