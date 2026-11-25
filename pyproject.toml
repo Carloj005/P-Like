@@ -24,6 +24,9 @@ classifiers = [
 [project.scripts]
 plike = "plike.cli:main"
 
+[project.gui-scripts]
+plike-studio = "plike.gui:launch_gui"
+
 [project.entry-points."pygments.lexers"]
 plike = "plike.pygments_lexer:PLikeLexer"
 

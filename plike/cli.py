@@ -12,6 +12,7 @@ from . import __version__
 from .ast_nodes import ast_to_dict
 from .bytecode import CompiledProgram
 from .driver import CompileResult, compile_source
+from .gui import launch_gui
 from .ide import launch_ide
 from .napoli import LaccettiMood, NapoliMatch, fetch_latest_napoli_match
 from .repl import start_repl
@@ -298,6 +299,11 @@ def build_parser() -> argparse.ArgumentParser:
             default_napoli=a.napoli,
         )
     )
+
+    p_gui = sub.add_parser("gui", help="Avvia P-Like Studio come App Desktop Windows nativa (Tkinter)")
+    p_gui.add_argument("file", nargs="?", default=None, help="File .plike opzionale da aprire")
+    p_gui.add_argument("--napoli", default="auto", help="Modalita Variabile Napoli iniziale (default: auto)")
+    p_gui.set_defaults(func=lambda a: launch_gui(initial_file=a.file, default_napoli=a.napoli))
 
     return parser
 

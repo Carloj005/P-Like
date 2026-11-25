@@ -28,8 +28,15 @@ from ..driver import compile_source
 from ..napoli import fetch_latest_napoli_match
 from ..vm import PLikeRuntimeError, PLikeVM
 
-STATIC_DIR = Path(__file__).resolve().parent / "static"
-REPO_EXAMPLES_DIR = Path(__file__).resolve().parent.parent.parent / "examples"
+import sys
+
+if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
+    _BASE = Path(sys._MEIPASS)  # type: ignore[attr-defined]
+    STATIC_DIR = _BASE / "plike" / "ide" / "static"
+    REPO_EXAMPLES_DIR = _BASE / "examples"
+else:
+    STATIC_DIR = Path(__file__).resolve().parent / "static"
+    REPO_EXAMPLES_DIR = Path(__file__).resolve().parent.parent.parent / "examples"
 
 EXAMPLE_METADATA: Dict[str, Tuple[str, str, str]] = {
     # filename: (titolo, categoria, stdin_suggerito)

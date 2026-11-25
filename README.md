@@ -5,7 +5,8 @@ Implementazione completa del linguaggio didattico **P-Like (Pascal-Like)** nato 
 - **Compilatore multi-stadio reale**: Lexer, Parser a discesa ricorsiva con error recovery, Analizzatore Semantico & Type-Checker, Compilatore verso **Bytecode P-Like (`.plbc`)** + **Virtual Machine dedicata**.
 - **Doppio Transpiler**: compilazione diretta da P-Like a **C99 (`.c`)** e **Python 3 (`.py`)**.
 - **La Variabile "Partite del Napoli"**: fedele alla leggenda universitaria federiciana, l'esito della compilazione dipende dalle regole ufficiali del P-Like **combinate con il risultato live dell'ultima partita ufficiale dell'SSC Napoli**!
-- **P-Like Studio (IDE Grafico locale)**: avvia `plike ide` per aprire un IDE moderno in stile VS Code + **tema Azzurro Napoli** nel browser (zero dipendenze esterne) con syntax highlighting live, numeri di riga, diagnostiche cliccabili, widget live SSC Napoli con barra umore Prof. Laccetti, console + input `read`, disassembler Bytecode, codice C99/Python generato, AST ed esplora-esempi!
+- **App Desktop Windows Nativa + Eseguibile `.exe`** (`plike gui` / `P-Like-Studio.exe` e `plike.exe`): finestra Windows nativa con barra scura DWM, icona Azzurro Napoli, supporto High-DPI, syntax highlighting live, numeri di riga, diagnostiche cliccabili, widget live SSC Napoli, console + stdin e 6 schede output (Console, Diagnostiche, Bytecode, C99, Python, AST), compilabile in eseguibili standalone `.exe` con `python build_exe.py`!
+- **P-Like Studio Web IDE** (`plike ide`): versione web locale in stile VS Code + tema Azzurro Napoli nel browser (zero dipendenze esterne).
 - **Zero dipendenze esterne**: pura Python Standard Library (`Python >= 3.9`).
 
 ---
@@ -75,7 +76,14 @@ plike ast examples/hello.plike
 plike check examples/stile_non_canonico.plike --napoli draw
 plike check examples/stile_non_canonico.plike --napoli loss
 
-# Avvia P-Like Studio — IDE grafico locale nel browser!
+# Avvia l'App Desktop Windows nativa (Tkinter dark + tema Azzurro Napoli)
+plike gui
+plike gui examples/esame_studente.plike --napoli win
+
+# Genera gli eseguibili standalone Windows (`dist/P-Like-Studio.exe` e `dist/plike.exe`)
+python build_exe.py
+
+# Oppure avvia la versione Web IDE locale nel browser
 plike ide
 plike ide examples/esame_studente.plike --napoli win
 
